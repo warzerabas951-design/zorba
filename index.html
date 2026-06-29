@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سیستەمی کۆگای زۆربا</title>
+    <style>
+        :root {
+            --card-bg: rgba(255, 255, 255, 0.85); 
+            --text-main: #2c3e50; 
+            --text-sub: #5a6c7d;
+            --accent: #d35400; 
+            --success: #27ae60;
+            --danger: #c0392b;
+            --border: rgba(255, 255, 255, 0.6);
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        
+        body { 
+            background: linear-gradient(rgba(245, 247, 250, 0.75), rgba(245, 247, 250, 0.75)), 
+                        url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0; 
+            padding: 12px; 
+            color: var(--text-main); 
+            direction: rtl; 
+            padding-bottom: 60px; 
+        }
+        
+        .header { 
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(211, 84, 0, 0.3);
+            color: var(--accent); 
+            padding: 14px; 
+            border-radius: 16px; 
+            text-align: center; 
+            font-weight: 900; 
+            font-size: 17px; 
+            margin-bottom: 14px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        /* 📊 نوێکاری لێرەدایە: ڕەنگەکان بە تەواوی لە یەک جیاکراونەتەوە */
+        .total-dashboard { 
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 12px; 
+            border-radius: 18px; 
+            margin-bottom: 16px; 
+            border: 1px solid var(--border);
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 6px; 
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        }
+        .dashboard-box { 
+            background: rgba(255, 255, 255, 0.5); 
+            padding: 12px 2px; 
+            border-radius: 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 75px;
+        }
+        .dashboard-box span { 
+            display: block; 
+            font-size: 9.5px; 
+            color: var(--text-sub); 
+            margin-bottom: 6px; 
+            font-weight: bold;
+            line-height: 1.3;
+        }
+        .dashboard-box b { 
+            display: block; 
+            font-size: 14px; 
+            font-weight: 900; 
+        }
+        /* 🎨 گۆڕانکاری لەم چوار کڵاسەی خوارەوە کراوە بۆ جیاوازی زیاتر */
+        .dashboard-box.purple b { color: #8e44ad; }   /* مۆری شاهانە بۆ کۆی گشتی */
+        .dashboard-box.orange b { color: #e67e22; }   /* پڕتەقاڵی بۆ ماوە لە مەخزەن */
+        .dashboard-box.green b { color: #27ae60; }    /* سەوز بۆ نێردراو */
+        .dashboard-box.blue b { color: #2980b9; }     /* شین بۆ کۆی پارچە */
+
+        .main-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px; 
+            padding: 16px 10px; 
+            box-shadow: 0 6px 16px rgba(0,0,0,0.04); 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            cursor: pointer; 
+            min-height: 90px; 
+            transition: all 0.2s ease;
+        }
+        .card:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.95); }
+        
+        .code-title { font-size: 18px; font-weight: 900; color: var(--accent); margin-bottom: 4px; }
+        .name-title { font-size: 11.5px; color: var(--text-main); font-weight: bold; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .bale-section { 
+            display: none; 
+            grid-column: span 2; 
+            background: rgba(255, 255, 255, 0.97); 
+            backdrop-filter: blur(20px);
+            padding: 16px; 
+            border-radius: 20px; 
+            border: 1px solid rgba(211, 84, 0, 0.4); 
+            margin-top: 4px; 
+            margin-bottom: 14px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            animation: slideDown 0.25s ease-out;
+        }
+        .bale-section.active { display: block; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .expanded-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: #f8fafc; padding: 10px; border-radius: 14px; margin-bottom: 14px; border: 1px solid #e2e8f0; font-size: 12px; }
+        .stat-box { background: #ffffff; padding: 10px; border-radius: 10px; border: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #4a5568; }
+        
+        .hint-text { font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 12px; text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 12px; }
+        
+        .bale-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 12px; }
+        .bale-card { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 14px; 
+            padding: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .bale-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+        .bale-name { font-size: 13px; font-weight: bold; color: #2d3748; }
+        
+        .lock-btn { 
+            background: #edf2f7; 
+            color: #4a5568; 
+            padding: 4px 12px; 
+            border-radius: 8px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border: 1px solid #cbd5e0; 
+        }
+        
+        .inputs-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        .input-group label { font-size: 10px; font-weight: bold; color: var(--text-sub); text-align: center; }
+
+        .bale-card input { 
+            width: 100%; 
+            padding: 8px 4px; 
+            text-align: center; 
+            border: 1px solid #cbd5e0; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            background: #f8fafc; 
+            color: #2d3748; 
+            outline: none;
+        }
+        .bale-card input:focus { border-color: var(--accent); background: #ffffff; }
+        .bale-card input.calc-output { background: #e2e8f0; color: #1a202c; border-color: #cbd5e0; cursor: not-allowed; }
+        
+        .bale-card.sent { border-color: var(--success); background: #f0fdf4; }
+        .bale-card.sent .lock-btn { background: var(--success); color: white; border-color: var(--success); }
+        .bale-card.sent input { background: #ffffff; border-color: var(--success); color: var(--success); }
+        .bale-card.sent input.calc-output { background: #e6f4ea; color: #1e7e34; }
+    </style>
+</head>
+<body>
+
+    <div class="header">🧥 سیستەمی فەرمی کۆگای زۆربا</div>
+    
+    <div class="total-dashboard">
+        <!-- گۆڕینی کڵاسی ڕەنگ بۆ مۆر -->
+        <div class="dashboard-box purple">
+            <span>📦 کۆی گشتی باڵەکان</span>
+            <b id="global-total">0</b>
+        </div>
+        <!-- گۆڕینی کڵاسی ڕەنگ بۆ پڕتەقاڵی گەش -->
+        <div class="dashboard-box orange">
+            <span>🏪 ماوە لە مەخزەن</span>
+            <b id="global-rem">0</b>
+        </div>
+        <div class="dashboard-box green">
+            <span>🚚 نێردراو بۆ دوکان</span>
+            <b id="global-shop">0</b>
+        </div>
+        <div class="dashboard-box blue">
+            <span>👕 کۆی گشتی پارچە</span>
+            <b id="global-pieces">0</b>
+        </div>
+    </div>
+    
+    <div class="main-grid" id="app"></div>
+
+<script>
+    const items = [
+        { c: "VV", n: "مەخمەر", b: 10 },
+        { c: "DC", n: "باڵتۆ لۆکەی ئافرەتان", b: 15 },
+        { c: "HOOD", n: "کڵاودار (هودی)", b: 30 },
+        { c: "RTS", n: "چاکەتی بێ کڵاو", b: 20 },
+        { c: "LWC", n: "باڵتۆ خوری ئافرەتان", b: 15 },
+        { c: "VEST-M", n: "یەلەکی پیاوان", b: 4 },
+        { c: "VEST-L", n: "یەلەکی ئافرەتان", b: 6 },
+        { c: "BS", n: "چاکەتی بەیسبۆڵ", b: 5 },
+        { c: "PLAZO", n: "پانتۆڵی فراوانی زستانە", b: 15 },
+        { c: "TRP", n: "پانتۆڵی وەرزشی (جۆگەر)", b: 25 },
+        { c: "LSL", n: "قەتیفەی درێژی ئافرەتان", b: 5 },
+        { c: "CNDL", n: "کاردیگانی درێژی ئافرەتان", b: 15 },
+        { c: "LLSW", n: "بلوزی درێژی ئافرەتان", b: 15 },
+        { c: "FUR", n: "فەروو", b: 5 },
+        { c: "LSS-H", n: "بلوزی خوری ئافرەتان", b: 12 },
+        { c: "CPK", n: "چاکەتی پۆپۆڕی منداڵان", b: 15 },
+        { c: "MSW", n: "بلوزی پیاوان", b: 10 },
+        { c: "MS", n: "کراسی زستانەی پیاوان", b: 10 },
+        { c: "VEST-S", n: "یەلەکی بلوز", b: 10 },
+        { c: "22D", n: "چاکەتی بارانی پیاوان", b: 18 },
+        { c: "MJK", n: "چاکەتی زیپداری پیاوان", b: 12 },
+        { c: "CPJ", n: "کۆستیمی جینس", b: 3 },
+        { c: "CPJ-H", n: "جینسی قورسی ئافرەتان", b: 5 },
+        { c: "MJPH", n: "جینسی زستانەی پیاوان", b: 2 },
+        { c: "BJU", n: "سەرپێی کۆرپەلە", b: 5 },
+        { c: "CAP-H", n: "پانتۆڵی کارگۆی قورس", b: 5 },
+        { c: "LV", n: "یەلەکی درێژ", b: 5 },
+        { c: "SPLAZO", n: "بلوز و پانتۆڵی فراوان", b: 25 },
+        { c: "ANG", n: "بلوزی ئەنگۆرا", b: 10 },
+        { c: "GF", n: "قوماشی فلیس", b: 10 },
+        { c: "WCAP", n: "کڵاوی زستانە", b: 5 },
+        { c: "TRP#", n: "پانتۆڵی وەرزشی جۆری B", b: 10 }
+    ];
+
+    const container = document.getElementById('app');
+
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.id = `main-card-${item.c}`;
+        card.setAttribute('onclick', `toggleSection('${item.c}')`);
+        card.innerHTML = `
+            <span class="code-title">${item.c}</span>
+            <span class="name-title">${item.n}</span>
+        `;
+
+        let balesHtml = '';
+        for(let i=1; i<=item.b; i++) {
+            balesHtml += `
+                <div class="bale-card" id="bcard-${item.c}-${i}" ondblclick="event.stopPropagation(); handleDoubleClick('${item.c}', ${i}, ${item.b})">
+                    <div class="bale-top">
+                        <span class="bale-name">باڵەی ${i}</span>
+                        <div class="lock-btn" id="lock-${item.c}-${i}">🔒 قفل</div>
+                    </div>
+                    <div class="inputs-row">
+                        <div class="input-group">
+                            <label>پارچە</label>
+                            <input type="number" placeholder="١٠٠" id="input-${item.c}-${i}" oninput="calculateSinglePrice('${item.c}', ${i}); calculateBales('${item.c}', ${item.b})" onclick="event.stopPropagation();">
+                        </div>
+                        <div class="input-group">
+                            <label>کۆی فرۆشتن</label>
+                            <input type="number" placeholder="550000" id="totalprice-${item.c}-${i}" oninput="calculateSinglePrice('${item.c}', ${i})" onclick="event.stopPropagation();">
+                        </div>
+                        <div class="input-group">
+                            <label>نرخی تاک</label>
+                            <input type="text" placeholder="5500" id="singleprice-${item.c}-${i}" class="calc-output" disabled onclick="event.stopPropagation();">
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        const baleSection = document.createElement('div');
+        baleSection.className = 'bale-section';
+        baleSection.id = `sec-${item.c}`;
+        baleSection.innerHTML = `
+            <div class="expanded-stats">
+                <div class="stat-box">📥 سەرەتا: <span style="color:#8e44ad;">${item.b}</span></div>
+                <div class="stat-box" style="color:var(--success);">🚚 نێردراو: <span id="shop-${item.c}">0</span></div>
+                <div class="stat-box" style="color:#e67e22;">🏪 ماوە: <span id="rem-${item.c}">${item.b}</span></div>
+                <div class="stat-box" style="color:#2980b9;">👕 پارچە: <span id="pieces-${item.c}">0</span></div>
+            </div>
+            <div class="hint-text">✨ بۆ ناردن بۆ دوکان، ٢ بار خێرا (Double Click) لەسەر باڵەکە بدە</div>
+            <div class="bale-grid">${balesHtml}</div>
+        `;
+
+        container.appendChild(card);
+        container.appendChild(baleSection);
+    });
+
+    function calculateSinglePrice(itemCode, baleNum) {
+        const pieces = parseInt(document.getElementById(`input-${itemCode}-${baleNum}`).value) || 0;
+        const totalPrice = parseInt(document.getElementById(`totalprice-${itemCode}-${baleNum}`).value) || 0;
+        const singlePriceInput = document.getElementById(`singleprice-${itemCode}-${baleNum}`);
+
+        if (pieces > 0 && totalPrice > 0) {
+            const singleResult = Math.round(totalPrice / pieces);
+            singlePriceInput.value = singleResult;
+        } else {
+            singlePriceInput.value = '';
+        }
+    }
+
+    function updateGlobalDashboard() {
+        let globalTotal = 0;
+        let globalShop = 0;
+        let globalRem = 0;
+        let globalPieces = 0;
+
+        items.forEach(item => {
+            globalTotal += item.b; 
+            for (let i = 1; i <= item.b; i++) {
+                const baleCard = document.getElementById(`bcard-${item.c}-${i}`);
+                const inputVal = parseInt(document.getElementById(`input-${item.c}-${i}`).value) || 0;
+                
+                if (baleCard && baleCard.classList.contains('sent')) {
+                    globalShop++;
+                    globalPieces += inputVal;
+                } else {
+                    globalRem++;
+                }
+            }
+        });
+
+        document.getElementById('global-total').innerText = globalTotal + " باڵ";
+        document.getElementById('global-shop').innerText = globalShop + " باڵ";
+        document.getElementById('global-rem').innerText = globalRem + " باڵ";
+        document.getElementById('global-pieces').innerText = globalPieces + " دانە";
+    }
+
+    function handleDoubleClick(itemCode, baleNum, totalBales) {
+        const baleCard = document.getElementById(`bcard-${itemCode}-${baleNum}`);
+        const lockBtn = document.getElementById(`lock-${itemCode}-${baleNum}`);
+        const inputPieces = document.getElementById(`input-${itemCode}-${baleNum}`);
+        const inputTotal = document.getElementById(`totalprice-${itemCode}-${baleNum}`);
+        
+        if (baleCard.classList.contains('sent')) {
+            baleCard.classList.remove('sent');
+            lockBtn.innerHTML = "🔒 قفل";
+            inputPieces.disabled = false;
+            inputTotal.disabled = false;
+        } else {
+            baleCard.classList.add('sent');
+            lockBtn.innerHTML = "✅ دوکان";
+            inputPieces.disabled = true;
+            inputTotal.disabled = true;
+        }
+        calculateBales(itemCode, totalBales);
+    }
+
+    function calculateBales(itemCode, totalBales) {
+        let sentCount = 0;
+        let totalPieces = 0;
+        
+        for (let i = 1; i <= totalBales; i++) {
+            const baleCard = document.getElementById(`bcard-${itemCode}-${i}`);
+            const inputVal = parseInt(document.getElementById(`input-${itemCode}-${i}`).value) || 0;
+            
+            if (baleCard.classList.contains('sent')) {
+                sentCount++;
+                totalPieces += inputVal;
+            }
+        }
+        
+        document.getElementById(`shop-${itemCode}`).innerText = sentCount;
+        document.getElementById(`rem-${itemCode}`).innerText = (totalBales - sentCount);
+        document.getElementById(`pieces-${itemCode}`).innerText = totalPieces;
+        
+        updateGlobalDashboard();
+    }
+
+    function toggleSection(id) {
+        const section = document.getElementById('sec-' + id);
+        const mainCard = document.getElementById('main-card-' + id);
+        
+        document.querySelectorAll('.bale-section').forEach(sec => {
+            if(sec.id !== 'sec-' + id) sec.classList.remove('active');
+        });
+        document.querySelectorAll('.card').forEach(c => {
+            if(c.id !== 'main-card-' + id) {
+                c.style.borderColor = 'var(--border)';
+                c.style.background = 'var(--card-bg)';
+            }
+        });
+
+        section.classList.toggle('active');
+        
+        if (section.classList.contains('active')) {
+            mainCard.style.borderColor = 'var(--accent)';
+            mainCard.style.background = 'rgba(211, 84, 0, 0.1)';
+        } else {
+            mainCard.style.borderColor = 'var(--border)';
+            mainCard.style.background = 'var(--card-bg)';
+        }
+    }
+
+    updateGlobalDashboard();
+</script>
+</body>
+</html>
