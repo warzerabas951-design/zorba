@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ckb" dir="rtl"> 
+<html lang="ckb" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +9,23 @@
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; font-family: sans-serif; }
   #root { min-height: 100vh; }
+  #loading-msg { padding: 40px 20px; text-align: center; direction: rtl; color: #333; }
+  #error-box { display:none; padding: 20px; margin: 20px; background:#fee; border:2px solid #e11; border-radius:10px; direction: ltr; text-align:left; white-space:pre-wrap; font-family: monospace; font-size: 12px; color:#900; }
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div id="loading-msg">⏳ چاوەڕوانبە، ئەپەکە بار دەکرێت...</div></div>
+<div id="error-box"></div>
+<script>
+  window.onerror = function(msg, url, line, col, error) {
+    var box = document.getElementById('error-box');
+    box.style.display = 'block';
+    box.textContent = 'ERROR: ' + msg + '\nLine: ' + line + ':' + col + '\n' + (error && error.stack ? error.stack : '');
+    return false;
+  };
+</script>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect } = React;
 
